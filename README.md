@@ -1,6 +1,4 @@
-<!-- [![CI](https://github.com/yymmt742/tri_indices/actions/workflows/ci.yml/badge.svg)](https://github.com/yymmt742/tri_indices/actions/workflows/ci.yml) -->
-[![cmake][cmake]][cmake-url]
-[![fortran][fortran-shield]][fortran-url]
+[![CI](https://github.com/yymmt742/tri_indices/actions/workflows/ci.yml/badge.svg)](https://github.com/yymmt742/tri_indices/actions/workflows/ci.yml)
 
 
 <!-- PROJECT LOGO -->
@@ -66,10 +64,38 @@ tri_indices provides a mapping/inverse mapping from an index of an upper triangu
 
    ```fortran
       program main
-      use tri_indices
-      implicit none
+        use mod_tri_indices
+        implicit none
+        integer :: i, j, k
+
+        do j=1,10
+          do i=1, j
+            call pack_tri_indices(i, j, k) ! k = 1 ... 55
+          end do
+        end do
+
+        do k=1,55
+          call unpack_tri_indices(k=k, i, j) ! i and j are upper tri indeces
+        end do
+
+        do j=2,10
+          do i=1, j - 1
+            call pack_tri_indices(i, j, d=1, k) ! k = 1 ... 45
+          end do
+        end do
+
+        do k=1,45
+          call unpack_tri_indices(k=k, d=1, i, j) ! i and j are upper tri indeces without diagonal elements
+        end do
       end program main
    ```
+
+   The following functions are available.
+
+  | Subroutine                       |  Arguments (intent(in)) | Arguments (intent(out)) | Description                                                                                      |
+  | -------------------------------- |  ---------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
+  | pack_tri_indices(i,j,[d],k)      |  i, j, d(optional)      | k                       | Maps the indices i,j of upper trianglar matrix to the index k of the packed 1-dimensional array. |
+  | unpack_tri_indices(k, [d], i, j) |  k, d(optional)         | i, j                    | Maps the index k of the packed 1-dimensional array to the indices i,j of upper trianglar matrix. |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
