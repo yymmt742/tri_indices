@@ -1,0 +1,105 @@
+#:set kinds = ["INT8", "INT16", "INT32", "INT64"]
+module mod_tri_indices
+  use ISO_FORTRAN_ENV, only: INT8, INT16, INT32, INT64
+  implicit none
+  private
+  public :: pack_tri_indices
+  public :: unpack_tri_indices
+!
+  interface pack_tri_indices
+#:for kind in kinds
+    module procedure :: pack_tri_indices_${kind}$
+#:endfor
+#:for kind in kinds
+    module procedure :: pack_tri_indices_ds_${kind}$
+#:endfor
+  end interface
+!
+  interface unpack_tri_indices
+#:for kind in kinds
+    module procedure :: unpack_tri_indices_${kind}$
+#:endfor
+#:for kind in kinds
+    module procedure :: unpack_tri_indices_ds_${kind}$
+#:endfor
+  end interface
+!
+contains
+#:for kind in kinds
+  !| Maps the indices (/(i,j)/) of the upper triangular matrix
+  !  to the index (/k/) of the one-dimensional array.
+  pure elemental subroutine pack_tri_indices_${kind}$(i, j, k)
+    !| low index if (/i<j/), else collumn index.
+    integer(${kind}$), intent(in)  :: i
+    !| collumn index if (/i<j/), else low index.
+    integer(${kind}$), intent(in)  :: j
+    !| packed index.
+    integer(${kind}$), intent(out) :: k
+    !| diagonal shift
+    if (i < j) then
+      k = (j - 1) * j / 2 + i
+    else
+      k = (i - 1) * i/ 2 + j
+    end if
+  end subroutine pack_tri_indices_${kind}$
+!
+#:endfor
+#:for kind in kinds
+  !| Maps the indices (/(i,j)/) of the upper triangular matrix
+  !  to the index (/k/) of the one-dimensional array.
+  pure elemental subroutine pack_tri_indices_ds_${kind}$(i, j, d, k)
+    !| low index if (/i<j/), else collumn index.
+    integer(${kind}$), intent(in)  :: i
+    !| collumn index if (/i<j/), else low index.
+    integer(${kind}$), intent(in)  :: j
+    !| diagonal shift
+    integer(${kind}$), intent(in)  :: d
+    !| packed index.
+    integer(${kind}$), intent(out) :: k
+    if (i < j) then
+      k = j - d
+      k = (k - 1) * k / 2 + i
+    else
+      k = i - d
+      k = (k - 1) * k / 2 + j
+    end if
+  end subroutine pack_tri_indices_ds_${kind}$
+!
+#:endfor
+#:for kind in kinds
+  !| Maps the indices (/(i,j)/) of the upper triangular matrix
+  !  to the index (/k/) of the one-dimensional array.
+  pure elemental subroutine unpack_tri_indices_${kind}$(k, i, j)
+    !| packed index.
+    integer(${kind}$), intent(in)  :: k
+    !| low index.
+    integer(${kind}$), intent(out) :: i
+    !| collumn index.
+    integer(${kind}$), intent(out) :: j
+    i = 2 * (2 * (2 * k)) - 7
+    j = INT((SQRT(real(i)) - 1.0), ${kind}$) / 2 + 1 ! cantor_pair_inverse
+    i = k - j * (j - 1) / 2
+  end subroutine unpack_tri_indices_${kind}$
+!
+#:endfor
+#:for kind in kinds
+  !| Maps the indices (/(i,j)/) of the upper triangular matrix
+  !  to the index (/k/) of the one-dimensional array.
+  pure elemental subroutine unpack_tri_indices_ds_${kind}$(k, d, i, j)
+    !| packed index.
+    integer(${kind}$), intent(in)  :: k
+    !| packed index.
+    integer(${kind}$), intent(in)  :: d
+    !| low index.
+    integer(${kind}$), intent(out) :: i
+    !| collumn index.
+    integer(${kind}$), intent(out) :: j
+    i = 2 * (2 * (2 * k)) - 7
+    j = INT((SQRT(real(i)) - 1.0), ${kind}$) / 2 + 1 + d ! cantor_pair_inverse
+    i = j - d
+    i = k - i * (i - 1) / 2
+  end subroutine unpack_tri_indices_ds_${kind}$
+!
+#:endfor
+end module mod_tri_indices
+
